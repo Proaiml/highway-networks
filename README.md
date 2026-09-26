@@ -1,4 +1,4 @@
-﻿# Highway Networks (PyTorch)
+# Highway Networks (PyTorch)
 
 Bu depo, **Rupesh Kumar Srivastava, Klaus Greff ve Jürgen Schmidhuber** tarafından önerilen ve derin öğrenmede yüzlerce katmanlı ağların eğitilmesine öncülük eden **"Highway Networks"** mimarisinin PyTorch uygulamasını içermektedir.
 
@@ -37,14 +37,16 @@ Makalede önerildiği üzere dönüşüm kapısı bias'ı $b_T$ başlangıçta n
 
 ## 📊 20 Katmanlı Karşılaştırma Deneyi (Highway vs. Plain MLP)
 
-Ağların derinlik arttıkça gradyan sönümüne direncini göstermek için 20 katmanlı bir **Highway Network** ile 20 katmanlı standart **Plain MLP** aynı sentetik görevde karşılaştırılmıştır:
+20 katmanlı bir **Highway Network** ile 20 katmanlı standart bir **düz ağ** (ReLU'lu MLP) aynı sentetik görevde karşılaştırılır. Görev, 256 örnek üzerinde `y = sin(x) + gürültü` dönüşümünü öğrenmektir (64 boyut, tam toplu Adam, lr 1e-3, tohum 42). Tablodaki sayılar `python main.py` ile birebir yeniden üretilir.
 
-| Adım (Epoch) | Highway Network Kaybı (MSE) | Standart Düz Ağ (Plain MLP) | Durum |
+| Adım | Highway kaybı (MSE) | Düz ağ kaybı (MSE) | Ne oluyor |
 |:---:|:---:|:---:|:---|
-| **Epoch 1** | 0.36486 | 0.45009 | Başlangıç |
-| **Epoch 50** | 0.20196 | 0.44642 | Plain ağ gradyan sönümü nedeniyle tıkandı |
-| **Epoch 100** | 0.09524 | 0.44642 | Highway stabil öğrenmeye devam ediyor |
-| **Epoch 150** | **0.05817** | **0.44642** | Highway başarıyla yakınsadı |
+| 1 | 0.36486 | 0.45009 | Başlangıç |
+| 50 | 0.20196 | 0.44642 | Düz ağın çıktısı sıfıra çöktü; kayıp artık değişmiyor |
+| 100 | 0.09524 | 0.44642 | Highway öğrenmeye devam ediyor |
+| 150 | **0.05817** | 0.44642 | Highway kaybı hâlâ düşüyor |
+
+Karşılaştırma için iki referans değer var. Her zaman 0 tahmin eden bir modelin kaybı **0.447**'dir; düz ağ tam olarak buraya takılır, yani 20 katman boyunca sinyal ve gradyan sönmüştür. Gürültünün kendisinden gelen alt sınır ise **0.010**'dur; Highway 150 adımda bu sınıra doğru inmeye devam etmektedir.
 
 ![Highway vs Plain MLP](highway_vs_plain.png)
 
@@ -67,9 +69,9 @@ python main.py
 ```
 
 Kod çalıştığında:
-1. 3 katmanlı temel Highway modelinin girdi/çıktı tensör boyutlarını test eder.
-2. 20 katmanlı Highway Network ile Plain MLP'yi eğitir ve sonuçları ekrana basar.
-3. Kayıp eğrilerini `highway_vs_plain.png` olarak kaydeder.
+1. 3 katmanlı bir Highway modelinde girdi ve çıktı boyutlarını yazdırır.
+2. 20 katmanlı Highway ağını ve düz ağı 150 adım eğitir, kayıpları ekrana yazar.
+3. Kayıp eğrilerini `highway_vs_plain.png` olarak kaydeder (logaritmik eksen).
 
 ---
 
@@ -108,11 +110,11 @@ print("Çıktı boyutu:", y.shape)  # torch.Size([32, 128])
 }
 ```
 
-## Test
+## 🧪 Test
 
 ```bash
 pip install pytest
 python -m pytest tests -q
 ```
 
-Duman testleri yalnızca CPU kullanır ve birkaç saniyede biter.
+Testler model boyutlarını ve 30 katmanlı Highway ağında gradyanın ilk katmana ulaştığını denetler. Yalnızca CPU kullanır, birkaç saniyede biter.
