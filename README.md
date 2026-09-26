@@ -107,3 +107,12 @@ print("Çıktı boyutu:", y.shape)  # torch.Size([32, 128])
   year={2015}
 }
 ```
+
+## Test
+
+```bash
+pip install pytest
+python -m pytest tests -q
+```
+
+Duman testleri yalnızca CPU kullanır ve birkaç saniyede biter.
